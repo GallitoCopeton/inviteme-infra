@@ -5,27 +5,38 @@ on:
       - main
 
 jobs:
-  deploy:
+  aws_cdk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install Node.js
-        uses: actions/setup-node@v2
+      - name: cdk diff
+        uses: youyo/aws-cdk-github-actions@v2
         with:
-          node-version: '18.x'
+          cdk_subcommand: 'diff'
+          actions_comment: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'ca-central-1'
 
-      - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@master
+      - name: cdk deploy
+        uses: youyo/aws-cdk-github-actions@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          cdk_subcommand: 'deploy'
+          cdk_stack: 'stack1'
+          cdk_args: '--require-approval never'
+          actions_comment: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'ca-central-1'
 
-      - name: Install dependencies
-        run: yarn
-      - name: Synth stack
-        run: yarn cdk synth
-      - name: Deploy stack
-        run: yarn cdk deploy --all --require-approval never
+      - name: cdk synth
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+          cdk_subcommand: 'synth'
+          cdk_version: '1.16.2'
+          working_dir: 'src'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'ca-central-1'
