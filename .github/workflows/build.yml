@@ -17,8 +17,11 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Install CDK
+      - name: Install Dependencies
         run: npm install
+      
+      - name: Install CDK
+        run:  npm install -g aws-cdk
 
       - name: Deploy CDK
         run: cdk deploy --require-approval never
