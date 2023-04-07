@@ -2,7 +2,7 @@ name: Deploy CDK stacks
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
