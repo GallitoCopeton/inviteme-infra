@@ -55,7 +55,7 @@ export class GoLambdaStack extends cdk.Stack {
             GOARCH: 'amd64',
         };
         return new lambda.Function(this, id, {
-            code: lambda.Code.fromAssetImage(bucket, 'api/function.zip', undefined),
+            code: lambda.Code.fromBucket(bucket, 'api/function.zip', undefined),
             handler,
             runtime: lambda.Runtime.GO_1_X,
             memorySize: 128,
