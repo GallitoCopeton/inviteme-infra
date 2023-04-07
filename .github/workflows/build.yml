@@ -1,42 +1,28 @@
-name: Deploy CDK stacks
+name: Build and Deploy Lambda
+
 on:
   push:
     branches:
       - main
 
 jobs:
-  aws_cdk:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: cdk diff
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          cdk_subcommand: 'diff'
-          actions_comment: false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'ca-central-1'
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: cdk deploy
-        uses: youyo/aws-cdk-github-actions@v2
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          cdk_subcommand: 'deploy'
-          cdk_stack: 'GoLambdaStack'
-          cdk_args: '--require-approval never --app="npx ts-node --prefer-ts-exts bin/infra.ts"'
-          actions_comment: false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'ca-central-1'
+          node-version: '18.x'
 
-      - name: cdk synth
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          cdk_subcommand: 'synth'
-          cdk_version: '2.73.0'
-          working_dir: './bin'
+      - name: Install CDK
+        run: npm install
+
+      - name: Deploy CDK
+        run: cdk deploy --require-approval never
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'ca-central-1'
+          AWS_REGION: 'ca-central-1'
