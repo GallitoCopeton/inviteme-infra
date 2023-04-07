@@ -3,6 +3,8 @@ import * as lambda from '@aws-cdk/aws-lambda';
 import * as s3 from '@aws-cdk/aws-s3';
 import * as s3n from '@aws-cdk/aws-s3-notifications';
 import * as cdk from '@aws-cdk/core';
+import * as codepipeline from '@aws-cdk/aws-codepipeline';
+import * as codepipeline_actions from '@aws-cdk/aws-codepipeline-actions';
 
 export class GoLambdaStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -35,6 +37,33 @@ export class GoLambdaStack extends cdk.Stack {
 
         // Output the DNS of your API gateway deployment
         new cdk.CfnOutput(this, 'lambda-url', { value: apiGtw.url! });
+
+        // create the CodePipeline
+        const pipeline = new codepipeline.Pipeline(this, 'MyPipeline');
+
+        // create the source stage
+        const sourceOutput = new codepipeline.Artifact();
+        const sourceAction = new codepipeline_actions.S3SourceAction({
+            actionName: 'S3Source',
+            bucket: bucket,
+            bucketKey: 'api/function.zip',
+            output: sourceOutput,
+        });
+        pipeline.addStage({
+            stageName: 'Source',
+            actions: [sourceAction],
+        });
+
+        // create the deploy stage
+        const deployAction = new codepipeline_actions.LambdaInvokeAction({
+            actionName: 'LambdaPublish',
+            lambda: lambdaFunction,
+            inputs: [sourceOutput],
+        });
+        pipeline.addStage({
+            stageName: 'Deploy',
+            actions: [deployAction],
+        });
     }
 
     /**
