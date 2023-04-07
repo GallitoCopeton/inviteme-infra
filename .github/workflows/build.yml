@@ -1,0 +1,33 @@
+name: Deploy CDK stacks
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build CDK app
+        run: npm run build
+
+      - name: Deploy CDK stacks
+        uses: aws-actions/aws-cdk@v2
+        with:
+          command: 'cdk deploy --require-approval never'
+          stack-names: 'GoLambdaStack'
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
